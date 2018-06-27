@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class TargetController : MonoBehaviour {
 
@@ -8,16 +9,26 @@ public class TargetController : MonoBehaviour {
 
     public float speed = 10f;
 
-    private int current;
+    public WaypointNode current;
 
     // Update is called once per frame
     void Update () {
-        if(transform.position != wayPoints[current].position)
+        if (Input.GetKeyDown("space"))
         {
-            Vector3 pos = Vector3.MoveTowards(transform.position, wayPoints[current].position, speed * Time.deltaTime);
+            if (current.children.Length > 1)
+            {
+                current = current.children[1];
+            }
+        }
+        Debug.Log(current.point);
+
+        if (transform.position != current.point.position)
+        {
+            Vector3 pos = Vector3.MoveTowards(transform.position, current.point.position, speed * Time.deltaTime);
             GetComponent<Rigidbody>().MovePosition(pos);
         } else {
-            current = (current + 1) % wayPoints.Length;
+            current = current.children[0];
+            
         }
     }
 }
