@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class RobotJoint : MonoBehaviour {
-	public static float LearningRate = 1f;
+	public static float LearningRate = 5f;
 	public static float SamplingDistance = 1f;
 	
 	public Vector3 axis;
 	public Vector3 startOffset;
 
-	private RobotJoint[] _joints;
+	public RobotJoint[] _joints;
 
 	// Use this for initialization
 	void Start () {
 		startOffset = transform.localPosition;
 
-		_joints = GetComponentsInParent<RobotJoint>();
+		//_joints = GetComponentsInParent<RobotJoint>();
 	}
 
 	public Vector3 ForwardKinematic(ref float[] angles) {
@@ -67,7 +67,6 @@ public class RobotJoint : MonoBehaviour {
 			float gradient = PartialGradient(target, ref angles, i);
 			angles[i] -= LearningRate * gradient;
 
-			_joints[i].transform.localRotation = Quaternion.AngleAxis(angles[i], axis);
 		}
 	}
 }
