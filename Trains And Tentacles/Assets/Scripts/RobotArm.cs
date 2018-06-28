@@ -12,7 +12,7 @@ public class RobotArm : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		//_joints = GetComponentsInChildren<RobotJoint>();
+		_joints = GetComponentsInChildren<RobotJoint>();
 		_angles = new float[_joints.Length];
 	}
 	
