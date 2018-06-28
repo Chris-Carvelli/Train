@@ -15,7 +15,7 @@ public class TrainController : MonoBehaviour {
 
     void Start()
     {
-        GetComponent<Renderer>().material.color = Color.blue;
+        GetComponentInChildren<Renderer>().material.color = Color.blue;
     }
 
     // Update is called once per frame
@@ -27,14 +27,14 @@ public class TrainController : MonoBehaviour {
                 current = current.children[1];
             }
         }
-        
-        if (transform.position != current.point.position)
-        {
+
+		//if (transform.position.x != current.point.position.x && transform.position.z != current.point.position.z)
+		if (transform.position != current.point.position) {
             Debug.Log(false);
             Vector3 pos = Vector3.MoveTowards(transform.position, current.point.position, speed * Time.deltaTime);
             Quaternion rot = Quaternion.RotateTowards(transform.rotation, current.point.rotation, rotSpeed * Time.deltaTime);
-            GetComponent<Rigidbody>().MovePosition(pos + offsetFromTrack);
-            GetComponent<Rigidbody>().MoveRotation(rot);
+			GetComponentInChildren<Rigidbody>().MovePosition(pos + offsetFromTrack);
+			GetComponentInChildren<Rigidbody>().MoveRotation(rot);
         } else {
             Debug.Log(true);
             current = current.children[0];
