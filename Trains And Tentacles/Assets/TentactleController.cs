@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class TentactleController : MonoBehaviour {
 
-    private bool onTrack;
+    public bool onTrack;
 
 	public Transform idlePoint;
     public GameObject[] hitPoints;

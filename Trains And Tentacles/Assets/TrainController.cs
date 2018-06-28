@@ -12,6 +12,11 @@ public class TrainController : MonoBehaviour {
 
     public WaypointNode current;
 
+    void Start()
+    {
+        GetComponent<Renderer>().material.color = Color.blue;
+    }
+
     // Update is called once per frame
     void Update () {
         if (Input.GetKeyDown("space"))
