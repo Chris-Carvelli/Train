@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(RobotJoint))]
 public class RobotArm : MonoBehaviour {
 	public Transform target;
 
@@ -12,7 +11,7 @@ public class RobotArm : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		//_joints = GetComponentsInChildren<RobotJoint>();
+		_joints = GetComponentsInChildren<RobotJoint>();
 		_angles = new float[_joints.Length];
 	}
 	
