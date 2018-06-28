@@ -31,9 +31,9 @@ public class TrainController : MonoBehaviour {
         {
             Debug.Log(false);
             Vector3 pos = Vector3.MoveTowards(transform.position, current.point.position, speed * Time.deltaTime);
-            Quaternion rot = Quaternion.RotateTowards(transform.rotation, current.point.rotation, rotSpeed * Time.deltaTime);
+            //Quaternion rot = Quaternion.RotateTowards(transform.rotation, current.point.rotation, rotSpeed * Time.deltaTime);
             GetComponent<Rigidbody>().MovePosition(pos);
-            GetComponent<Rigidbody>().MoveRotation(rot);
+            GetComponent<Rigidbody>().MoveRotation(current.point.rotation);
         } else {
             Debug.Log(true);
             current = current.children[0];

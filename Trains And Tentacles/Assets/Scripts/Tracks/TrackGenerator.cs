@@ -8,7 +8,7 @@ using System.Linq;
 public class TrackGenerator : MonoBehaviour {
 	public ControlPointData[] controlPoints;
 
-	public int step = 1;
+	public float step = 1;
 
 	//TMP create avatar script
 	public Transform waypointsHolder;
@@ -48,7 +48,10 @@ public class TrackGenerator : MonoBehaviour {
 			Vector3 dir = (b.localPosition - a.localPosition).normalized;
 			float distance = Vector3.Distance(a.localPosition, b.localPosition);
 
-			int midpoints = (int)distance / step;
+			a.position += dir * controlPoints[i].radius;
+			b.position -= dir * controlPoints[(i + 1) % controlPoints.Length].radius;
+
+			int midpoints = (int)(distance / step);
 
 			for (int j = 0; j < midpoints; j++) {
 				WaypointNode node = Instantiate(waypointPrefab);
@@ -56,7 +59,7 @@ public class TrackGenerator : MonoBehaviour {
 				node.transform.SetParent(waypointsHolder);
 
 				node.transform.localPosition = a.localPosition + dir * step * j;
-				node.transform.localRotation = Quaternion.Euler(dir);
+				node.transform.localRotation = Quaternion.LookRotation(dir, Vector3.up);
 				//scale?
 
 				waypoints.Add(node);
