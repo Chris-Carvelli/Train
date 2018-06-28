@@ -9,7 +9,7 @@ public class WaypointNode : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-		
+        point = transform;
 	}
 	
 	// Update is called once per frame
