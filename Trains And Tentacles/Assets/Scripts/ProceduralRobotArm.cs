@@ -42,6 +42,7 @@ public class ProceduralRobotArm : MonoBehaviour {
 		curr.localPosition = Vector3.zero;
 		for (int i = 0; i < bones.Length; i++) {
 			RobotJoint joint = Instantiate(bonePrefab);
+			joint.transform.GetChild(0).localScale = Vector3.one * sectionLength;
 			//TMP
 			switch (i % 3) {
 				case 0:
@@ -62,7 +63,7 @@ public class ProceduralRobotArm : MonoBehaviour {
 
 			bones[i].localRotation = curr.localRotation;
 			bones[i].localScale = curr.localScale;
-			bones[i].localPosition = curr.localPosition + (curr.up * sectionLength);
+			bones[i].localPosition = curr.up * sectionLength;
 
 			bindPoses[i] = bones[i].worldToLocalMatrix * transform.localToWorldMatrix;
 

@@ -6,7 +6,10 @@ public class TentactleController : MonoBehaviour {
 
     private bool onTrack;
 
+	public Transform idlePoint;
     public GameObject[] hitPoints;
+
+	public RobotArm arm;
 
     private float timer;
 
@@ -19,6 +22,8 @@ public class TentactleController : MonoBehaviour {
 	void Start () {
         onTrack = false;
         InitialiseTimer();
+
+		arm = GetComponent<RobotArm>();
 	}
 	
 	// Update is called once per frame
@@ -45,10 +50,12 @@ public class TentactleController : MonoBehaviour {
         {
             currentHit = Random.Range(0, hitPoints.Length);
             hitPoints[currentHit].GetComponent<Renderer>().material.color = Color.red;
+			arm.target = hitPoints[currentHit].transform;
 
         } else
         {
             hitPoints[currentHit].GetComponent<Renderer>().material.color = Color.white;
+			arm.target = idlePoint;
         }
     }
 }

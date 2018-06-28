@@ -5,7 +5,7 @@ using UnityEngine;
 //TODO make this only a data container and move all the logic in RobotArm
 public class RobotJoint : MonoBehaviour {
 	//TODO move in RobotArm
-	public static float LearningRate = 5f;
+	public static float LearningRate = 1f;
 	public static float SamplingDistance = 1f;
 	
 	//data
