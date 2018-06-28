@@ -20,8 +20,7 @@ public class TargetController : MonoBehaviour {
                 current = current.children[1];
             }
         }
-        Debug.Log(current.point);
-
+        
         if (transform.position != current.point.position)
         {
             Vector3 pos = Vector3.MoveTowards(transform.position, current.point.position, speed * Time.deltaTime);
