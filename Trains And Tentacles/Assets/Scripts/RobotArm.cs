@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(RobotJoint))]
 public class RobotArm : MonoBehaviour {
 	public Transform target;
 
