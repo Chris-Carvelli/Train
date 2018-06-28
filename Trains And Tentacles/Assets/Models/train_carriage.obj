@@ -1,7 +1,7 @@
 # Blender v2.76 (sub 0) OBJ File: 'train_carriage.blend'
 # www.blender.org
 mtllib train_carriage.mtl
-o Cube
+g Cube
 v 3.999998 -2.000000 -2.000000
 v 3.999998 -2.000000 2.000000
 v -3.999999 -2.000000 2.000000
