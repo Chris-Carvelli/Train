@@ -2,13 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//TODO make this only a data container and move all the logic in RobotArm
 public class RobotJoint : MonoBehaviour {
+	//TODO move in RobotArm
 	public static float LearningRate = 5f;
 	public static float SamplingDistance = 1f;
 	
+	//data
 	public Vector3 axis;
 	public Vector3 startOffset;
+	public float minAngle = 0.0f;
+	public float maxAngle = 360;
 
+	//service vars
 	private RobotArm _arm;
 
 	// Use this for initialization
@@ -56,6 +62,8 @@ public class RobotJoint : MonoBehaviour {
 		for (int i = 0; i < _arm._joints.Length; i++) {
 			float gradient = PartialGradient(target, ref angles, i);
 			angles[i] -= LearningRate * gradient;
+
+			angles[i] = Mathf.Clamp(angles[i], minAngle, maxAngle);
 
 		}
 	}
