@@ -6,9 +6,10 @@ using System;
 public class TrainController : MonoBehaviour {
 
     public Transform[] wayPoints;
+	public Vector3 offsetFromTrack;
 
     public float speed = 10f;
-    private float rotSpeed = 60f;
+    public float rotSpeed = 60f;
 
     public WaypointNode current;
 
@@ -31,9 +32,9 @@ public class TrainController : MonoBehaviour {
         {
             Debug.Log(false);
             Vector3 pos = Vector3.MoveTowards(transform.position, current.point.position, speed * Time.deltaTime);
-            //Quaternion rot = Quaternion.RotateTowards(transform.rotation, current.point.rotation, rotSpeed * Time.deltaTime);
-            GetComponent<Rigidbody>().MovePosition(pos);
-            GetComponent<Rigidbody>().MoveRotation(current.point.rotation);
+            Quaternion rot = Quaternion.RotateTowards(transform.rotation, current.point.rotation, rotSpeed * Time.deltaTime);
+            GetComponent<Rigidbody>().MovePosition(pos + offsetFromTrack);
+            GetComponent<Rigidbody>().MoveRotation(rot);
         } else {
             Debug.Log(true);
             current = current.children[0];
