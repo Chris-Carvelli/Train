@@ -15,28 +15,25 @@ public class TrainController : MonoBehaviour {
     public float speed = 10f;
     public float rotSpeed = 60f;
 
+	[Header("SpeedManagement")]
+	public float maxSpeed = 50f;
+	public float avgSpeed = 15f;
+	public float minSpeed = 5f;
+
+	public bool speedControl;
+
 
 	void Start()
     {
 		//TODO auto get prev and next
         GetComponentInChildren<Renderer>().material.color = Color.blue;
+
+		speed = avgSpeed;
     }
 
 	// Update is called once per frame
 	void Update() {
-		if (Input.GetKeyDown("space"))
-			DoSwitch();
-
-		//if (Switch()) {
-		//	t -= 1;
-		//	turning = !turning;
-		//	if (!turning)
-		//		Forward();
-		//}
-		//if (IsTurning())
-		//	DoTurn();
-		//else
-		//	DoStraight();
+		ProcessControls();
 
 		if (turning)
 			DoTurn();
@@ -144,5 +141,36 @@ public class TrainController : MonoBehaviour {
 	private void DoSwitch () {
 		nextChildIndex = ++nextChildIndex % curr.children.Length;
 		next = curr.children[nextChildIndex];
+	}
+
+	private void ProcessControls() {
+		if (Input.GetKeyDown("space"))
+			DoSwitch();
+
+		if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift)) {
+			while (speed < maxSpeed) {
+				speed += 0.001f;
+			}
+		}
+
+		if (Input.GetKeyUp(KeyCode.LeftShift) || Input.GetKeyUp(KeyCode.RightShift)) {
+			while (speed > avgSpeed) {
+				speed -= 0.001f;
+			}
+		}
+
+		if (speedControl) {
+			if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl)) {
+				while (speed > minSpeed) {
+					speed -= 0.001f;
+				}
+			}
+
+			if (Input.GetKeyUp(KeyCode.LeftControl) || Input.GetKeyUp(KeyCode.RightControl)) {
+				while (speed <= avgSpeed) {
+					speed += 0.001f;
+				}
+			}
+		}
 	}
 }
