@@ -6,7 +6,7 @@ using System.Linq;
 [RequireComponent(typeof(LineRenderer))]
 [ExecuteInEditMode]
 public class TrackGenerator : MonoBehaviour {
-	public ControlPointData root;
+	public WaypointNode root;
 
 	public float step = 1;
 
@@ -60,16 +60,13 @@ public class TrackGenerator : MonoBehaviour {
 	}
 
 	private void MakeRailTo(WaypointNode src, WaypointNode dst, int segmentID) {
-		ControlPointData srcData = src.GetComponent<ControlPointData>();
-		ControlPointData dstData = dst.GetComponent<ControlPointData>();
-
 		Vector3 a = src.transform.localPosition;
 		Vector3 b = dst.transform.localPosition;
 
 		Vector3 dir = (b - a).normalized;
 
-		a += dir * srcData.radius;
-		b -= dir * dstData.radius;
+		//a += dir * src.radius;
+		//b -= dir * dst.radius;
 
 
 		float distance = Vector3.Distance(a, b);
@@ -77,24 +74,54 @@ public class TrackGenerator : MonoBehaviour {
 		//int midpoints = (int)(distance / step);
 		int midpoints = 2;
 
+		WaypointNode node = Instantiate(waypointPrefab);
+		node.name = "Waypoint" + segmentID + "_0";
+		node.transform.SetParent(waypointsHolder);
+
+		//node.transform.localPosition = a + dir * step * j;
+		node.transform.localPosition = a;
+		node.transform.localRotation = Quaternion.LookRotation(dir, Vector3.up);
+		//scale?
+
+		waypoints.Add(node);
+
+		node = Instantiate(waypointPrefab);
+		node.name = "Waypoint" + segmentID + "_1";
+		node.transform.SetParent(waypointsHolder);
+
+		//node.transform.localPosition = a + dir * step * j;
+		node.transform.localPosition = b;
+		node.transform.localRotation = Quaternion.LookRotation(dir, Vector3.up);
+
+		waypoints.Add(node);
+		//scale?
+
 		//straight section
-		for (int j = 0; j < midpoints; j++) {
-			WaypointNode node = Instantiate(waypointPrefab);
-			node.name = "Waypoint" + segmentID + "_" + j;
-			node.transform.SetParent(waypointsHolder);
+		//for (int j = 0; j < midpoints; j++) {
+		//	WaypointNode node = Instantiate(waypointPrefab);
+		//	node.name = "Waypoint" + segmentID + "_" + j;
+		//	node.transform.SetParent(waypointsHolder);
 
-			//node.transform.localPosition = a + dir * step * j;
-			node.transform.localPosition = a + dir * distance * j;
-			node.transform.localRotation = Quaternion.LookRotation(dir, Vector3.up);
-			//scale?
+		//	//node.transform.localPosition = a + dir * step * j;
+		//	node.transform.localPosition = a + dir * distance * j;
+		//	node.transform.localRotation = Quaternion.LookRotation(dir, Vector3.up);
+		//	//scale?
 
-			waypoints.Add(node);
-		}
+		//	waypoints.Add(node);
+		//}
 
 		WaypointNode start = waypoints[waypoints.Count - 2];
 		start.children = new WaypointNode[1];
 		start.children[0] = waypoints.Last();
 
+
+		LineRenderer lrp = Instantiate(lineRendererPrefab);
+		lrp.positionCount = 2;
+		lrp.SetPositions(new List<Vector3> {start.transform.position, waypoints.Last().transform.position }.ToArray());
+
+		lrp = Instantiate(lineRendererPrefab);
+		lrp.positionCount = 2;
+		lrp.SetPositions(new List<Vector3> { start.transform.position, waypoints.Last().transform.position }.ToArray());
 	}
 
 	/*for (int i = 0; i < controlPoints.Length; i++) {
