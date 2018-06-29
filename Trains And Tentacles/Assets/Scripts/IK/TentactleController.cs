@@ -51,11 +51,51 @@ public class TentactleController : MonoBehaviour {
             currentHit = Random.Range(0, hitPoints.Length);
             hitPoints[currentHit].GetComponent<Renderer>().material.color = Color.red;
 			arm.target = hitPoints[currentHit].transform;
+            hitPoints[currentHit].GetComponent<BoxCollider>().enabled = true;
 
         } else
         {
             hitPoints[currentHit].GetComponent<Renderer>().material.color = Color.white;
-			arm.target = idlePoint;
+            hitPoints[currentHit].GetComponent<BoxCollider>().enabled = false;
+            arm.target = idlePoint;
         }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (onTrack)
+        {
+            Debug.Log("Tentacle Hit");
+        }
+    }
+
+    private enum HitDirection { None, Top, Bottom, Forward, Back, Left, Right }
+
+    private HitDirection ReturnDirection(GameObject Object, GameObject ObjectHit)
+    {
+
+        HitDirection hitDirection = HitDirection.None;
+        RaycastHit MyRayHit;
+        Vector3 direction = (Object.transform.position - ObjectHit.transform.position).normalized;
+        Ray MyRay = new Ray(ObjectHit.transform.position, direction);
+        Debug.Log(MyRay);
+        if (Physics.Raycast(MyRay, out MyRayHit))
+        {
+            Debug.Log("raycast");
+            if (MyRayHit.collider != null)
+            {
+                Debug.Log("not null");
+                Vector3 MyNormal = MyRayHit.normal;
+                MyNormal = MyRayHit.transform.TransformDirection(MyNormal);
+
+                if (MyNormal == MyRayHit.transform.up) { hitDirection = HitDirection.Top; }
+                if (MyNormal == -MyRayHit.transform.up) { hitDirection = HitDirection.Bottom; }
+                if (MyNormal == MyRayHit.transform.forward) { hitDirection = HitDirection.Forward; }
+                if (MyNormal == -MyRayHit.transform.forward) { hitDirection = HitDirection.Back; }
+                if (MyNormal == MyRayHit.transform.right) { hitDirection = HitDirection.Right; }
+                if (MyNormal == -MyRayHit.transform.right) { hitDirection = HitDirection.Left; }
+            }
+        }
+        return hitDirection;
     }
 }
