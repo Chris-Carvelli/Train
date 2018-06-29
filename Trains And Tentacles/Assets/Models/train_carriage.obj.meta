@@ -7,17 +7,27 @@ ModelImporter:
   fileIDToRecycleName:
     100000: //RootNode
     100002: Cube
+    100004: default
     400000: //RootNode
     400002: Cube
+    400004: default
     2300000: Cube
+    2300002: default
     3300000: Cube
+    3300002: default
     4300000: Cube
+    4300002: default
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material
     second: {fileID: 2100000, guid: 855d88c9195f38b4f8bade50de8993c6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.001
+    second: {fileID: 2100000, guid: 49825f3cedc11c4468bf239b6b73c87c, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
