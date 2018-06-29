@@ -8,14 +8,21 @@ public class TrainController : MonoBehaviour {
     public Transform[] wayPoints;
 	public Vector3 offsetFromTrack;
 
-    public float speed = 10f;
+    private float speed;
     public float rotSpeed = 60f;
 
+    public float maxSpeed = 50f;
+    public float avgSpeed = 15f;
+    public float minSpeed = 5f;
+
     public WaypointNode current;
+
+    public bool speedControl;
 
     void Start()
     {
         GetComponent<Renderer>().material.color = Color.blue;
+        speed = avgSpeed;
     }
 
     // Update is called once per frame
@@ -25,6 +32,41 @@ public class TrainController : MonoBehaviour {
             if (current.children.Length > 1)
             {
                 current = current.children[1];
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
+        {
+            while (speed < maxSpeed)
+            {
+                speed += 0.001f;
+            }
+        }
+
+        if (Input.GetKeyUp(KeyCode.LeftShift) || Input.GetKeyUp(KeyCode.RightShift))
+        {
+            while (speed > avgSpeed)
+            {
+                speed -= 0.001f;
+            }
+        }
+
+        if (speedControl)
+        {
+            if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl))
+            {
+                while (speed > minSpeed)
+                {
+                    speed -= 0.001f;
+                }
+            }
+
+            if (Input.GetKeyUp(KeyCode.LeftControl) || Input.GetKeyUp(KeyCode.RightControl))
+            {
+                while (speed <= avgSpeed)
+                {
+                    speed += 0.001f;
+                }
             }
         }
         
