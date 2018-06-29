@@ -143,7 +143,12 @@ public class TrainController : MonoBehaviour {
 		next = curr.children[nextChildIndex];
 	}
 
-	private void ProcessControls() {
+    private void OnTriggerEnter(Collider other)
+    {
+        Debug.Log("Train Hit");
+    }
+
+    private void ProcessControls() {
 		if (Input.GetKeyDown("space"))
 			DoSwitch();
 
