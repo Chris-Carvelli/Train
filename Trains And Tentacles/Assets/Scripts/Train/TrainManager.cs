@@ -20,7 +20,7 @@ public class TrainManager : MonoBehaviour {
 			//Instantiate new carts
 			CartController cart = Instantiate(cartPrefab);
             //cart.transform.SetParent(this.transform);
-            cart.transform.position = transform.position + new Vector3(0, 0.264f, -i);
+            cart.transform.position = transform.position + new Vector3(0, 0, -i * 1.5f);
 
 			cart.prevCart = sections.Last();
 			cart.Forward();

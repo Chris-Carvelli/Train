@@ -1,29 +1,27 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-[RequireComponent(typeof(LineRenderer))]
 [ExecuteInEditMode]
 public class TrackGenerator : MonoBehaviour {
 	public WaypointNode root;
 
+	[Header("Config")]
 	public float step = 1;
-
-	//TMP create avatar script
-	public Transform waypointsHolder;
-
+	public Material activematerial;
+	public Material inactiveMaterial;
 	private new LineRenderer renderer;
 
-	//prefabs
-	public WaypointNode waypointPrefab;
-	public LineRenderer lineRendererPrefab;
+	[Header("Prefabs")]
+	public Transform renderersHolder;
+	public TrackSection trackSectionPrefab;
 
 	// Use this for initialization
 	void Start () {
 		renderer = GetComponent<LineRenderer>();
 
-		waypoints = new List<WaypointNode>();
+		waypoints = new List<Vector3>();
 		grey = new List<WaypointNode>();
 		black = new List<WaypointNode>();
 	}
@@ -38,8 +36,9 @@ public class TrackGenerator : MonoBehaviour {
 		grey.Clear();
 		black.Clear();
 
-		for (int i = 0; i < waypointsHolder.childCount; i++)
-			DestroyImmediate(waypointsHolder.GetChild(i).gameObject);
+		LineRenderer[] renderers = GetComponentsInChildren<LineRenderer>();
+		foreach (LineRenderer renderer in renderers)
+			DestroyImmediate(renderer.gameObject);
 	}
 
 	private List<WaypointNode> grey = new List<WaypointNode>();
@@ -48,15 +47,22 @@ public class TrackGenerator : MonoBehaviour {
 		GenRail(root.GetComponent<WaypointNode>());
 	}
 
-	private List<WaypointNode> waypoints;
+	private List<Vector3> waypoints;
 	private void GenRail (WaypointNode curr) {
 		grey.Add(curr);
 
-		foreach(WaypointNode node in curr.children) {
-			MakeRailTo(curr, node, grey.Count);
+		foreach(WaypointNode node in curr.Children) {
 			if (!grey.Contains(node))
 				GenRail(node);
+			if (!black.Contains(node))
+				MakeRailTo(curr, node, grey.Count);
 		}
+
+		foreach (KeyValuePair<WaypointNode, List<WaypointNode>> connections in curr.Connections)
+			foreach (WaypointNode node in connections.Value)
+				MakeCurveRail(curr, connections.Key, node, grey.Count);
+
+		black.Add(curr);
 	}
 
 	private void MakeRailTo(WaypointNode src, WaypointNode dst, int segmentID) {
@@ -65,126 +71,52 @@ public class TrackGenerator : MonoBehaviour {
 
 		Vector3 dir = (b - a).normalized;
 
-		//a += dir * src.radius;
-		//b -= dir * dst.radius;
+		a += dir * src.radius;
+		b -= dir * dst.radius;
 
 
 		float distance = Vector3.Distance(a, b);
 
-		//int midpoints = (int)(distance / step);
-		int midpoints = 2;
+		waypoints.Add(a);
+		waypoints.Add(b);
 
-		WaypointNode node = Instantiate(waypointPrefab);
-		node.name = "Waypoint" + segmentID + "_0";
-		node.transform.SetParent(waypointsHolder);
-
-		//node.transform.localPosition = a + dir * step * j;
-		node.transform.localPosition = a;
-		node.transform.localRotation = Quaternion.LookRotation(dir, Vector3.up);
-		//scale?
-
-		waypoints.Add(node);
-
-		node = Instantiate(waypointPrefab);
-		node.name = "Waypoint" + segmentID + "_1";
-		node.transform.SetParent(waypointsHolder);
-
-		//node.transform.localPosition = a + dir * step * j;
-		node.transform.localPosition = b;
-		node.transform.localRotation = Quaternion.LookRotation(dir, Vector3.up);
-
-		waypoints.Add(node);
-		//scale?
-
-		//straight section
-		//for (int j = 0; j < midpoints; j++) {
-		//	WaypointNode node = Instantiate(waypointPrefab);
-		//	node.name = "Waypoint" + segmentID + "_" + j;
-		//	node.transform.SetParent(waypointsHolder);
-
-		//	//node.transform.localPosition = a + dir * step * j;
-		//	node.transform.localPosition = a + dir * distance * j;
-		//	node.transform.localRotation = Quaternion.LookRotation(dir, Vector3.up);
-		//	//scale?
-
-		//	waypoints.Add(node);
-		//}
-
-		WaypointNode start = waypoints[waypoints.Count - 2];
-		start.children = new WaypointNode[1];
-		start.children[0] = waypoints.Last();
-
-
-		LineRenderer lrp = Instantiate(lineRendererPrefab);
-		lrp.positionCount = 2;
-		lrp.SetPositions(new List<Vector3> {start.transform.position, waypoints.Last().transform.position }.ToArray());
-
-		lrp = Instantiate(lineRendererPrefab);
-		lrp.positionCount = 2;
-		lrp.SetPositions(new List<Vector3> { start.transform.position, waypoints.Last().transform.position }.ToArray());
+		TrackSection tsp = Instantiate(trackSectionPrefab);
+		tsp.SetEnds(src, dst);
+		tsp.Init();
+		tsp.transform.SetParent(renderersHolder);
+		tsp.generator = this;
+		tsp.SetPositions(new List<Vector3> { a, b }.ToArray());
 	}
 
-	/*for (int i = 0; i < controlPoints.Length; i++) {
-		Vector3 a = controlPoints[i].transform.localPosition;
-		Vector3 b = controlPoints[(i + 1) % controlPoints.Length].transform.localPosition;
+	private void MakeCurveRail(WaypointNode curr, WaypointNode prev, WaypointNode next, int segmentID) {
+		Vector3 a = curr.transform.localPosition + GetDirection(curr.transform, prev.transform) * curr.radius;
+		Vector3 b = curr.transform.localPosition;
+		Vector3 c = curr.transform.localPosition + GetDirection(curr.transform, next.transform) * curr.radius;
 
-		Vector3 dir = (b - a).normalized;
-
-		a += dir * controlPoints[i].radius;
-		b -= dir * controlPoints[(i + 1) % controlPoints.Length].radius;
-
-
-		float distance = Vector3.Distance(a, b);
-
+		//float distance = Vector3.Distance(a, b);
+		float distance = (Mathf.PI / 2) * curr.radius;
 		int midpoints = (int)(distance / step);
+		float angleStep = step / (curr.radius * (Mathf.PI / 2));
 
-		for (int j = 0; j < midpoints; j++) {
-			WaypointNode node = Instantiate(waypointPrefab);
-			node.name = "Waypoint" + i + "_" + j;
-			node.transform.SetParent(waypointsHolder);
+		List<Vector3> points = new List<Vector3>();
 
-			node.transform.localPosition = a + dir * step * j;
-			node.transform.localRotation = Quaternion.LookRotation(dir, Vector3.up);
-			//scale?
+		TrackSection tsp = Instantiate(trackSectionPrefab);
+		tsp.SetEnds(prev, next);
+		tsp.Init();
 
-			visited.Add(node);
+		for (int i = 0; i < midpoints; i++) {
+			Vector3 x = Vector3.Lerp(a, b, i * angleStep);
+			Vector3 y = Vector3.Lerp(b, c, i * angleStep);
+			points.Add(Vector3.Lerp(x, y, i * angleStep));
 		}
 
-		float angleStep = step / (controlPoints[(i + 1) % controlPoints.Length].radius * (Mathf.PI / 2));
-		a = visited.Last().transform.localPosition;
-		b = controlPoints[(i + 1) % controlPoints.Length].transform.localPosition;
-		Vector3 c = b;
-		c += ((controlPoints[(i + 2) % controlPoints.Length].transform.localPosition - b) / 10) * controlPoints[(i + 1) % controlPoints.Length].radius;
-
-		Vector3 prev = a;
-		for (float j = angleStep; j < 1; j += angleStep) {
-			Vector3 x = Vector3.Lerp(a, b, j);
-			Vector3 y = Vector3.Lerp(b, c, j);
-			Vector3 localPos = Vector3.Lerp(x, y, j);
-			//dir 
-
-			WaypointNode node = Instantiate(waypointPrefab);
-			node.name = "Waypoint" + i + "_corner_" + j;
-			node.transform.SetParent(waypointsHolder);
-
-			node.transform.localPosition = localPos;
-
-			dir = localPos - prev;
-			node.transform.localRotation = Quaternion.LookRotation(dir, Vector3.up);
-			//scale?
-
-			visited.Add(node);
-
-			prev = localPos;
-		}
+		tsp.transform.SetParent(curr.transform);
+		tsp.generator = this;
+		tsp.SetPositions(points.ToArray());
 	}
 
-	//setup children
-	for (int i = 0; i < visited.Count; i++) {
-		visited[i].children = new WaypointNode[1];
-		visited[i].children[0] = visited[(i + 1) % visited.Count];
+	private Vector3 GetDirection(Transform a, Transform b) {
+		return a.localPosition.GetDirection(b.localPosition);
 	}
-
-	renderer.positionCount = visited.Count;
-	renderer.SetPositions(visited.Select(x => x.transform.position).ToArray());*/
 }
+

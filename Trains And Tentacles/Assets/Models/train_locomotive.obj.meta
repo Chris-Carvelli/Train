@@ -1,7 +1,5 @@
 fileFormatVersion: 2
 guid: c290364791aff43a598f2c365e47673d
-timeCreated: 1530204071
-licenseType: Free
 ModelImporter:
   serializedVersion: 22
   fileIDToRecycleName:
@@ -12,6 +10,7 @@ ModelImporter:
     2300000: Head_Cube.003
     3300000: Head_Cube.003
     4300000: Head_Cube.003
+    2186277476908879412: ImportLogs
   externalObjects:
   - first:
       type: UnityEngine:Material
@@ -36,6 +35,7 @@ ModelImporter:
     animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
+    importConstraints: 0
     animationCompression: 1
     animationRotationError: 0.5
     animationPositionError: 0.5

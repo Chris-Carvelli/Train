@@ -18,3 +18,13 @@ public class TrackGeneratorEditor : Editor {
 		}
 	}
 }
+
+//[CustomPropertyDrawer(typeof(WaypointNode.Exits))]
+//public class ExitsPropertyDrawer : PropertyDrawer {
+//	public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
+//		//base.OnGUI(position, property, label);
+
+//		property.Next(true);
+//		GUI.Label(position, property.name);
+//	}
+//}

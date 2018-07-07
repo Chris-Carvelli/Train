@@ -22,9 +22,6 @@ public class TrainController : MonoBehaviour {
 
 	void Start()
     {
-		//TODO auto get prev and next
-        //GetComponentInChildren<Renderer>().material.color = Color.blue;
-
 		speed = avgSpeed;
 
 		manager = GetComponent<TrainManager>();
@@ -37,12 +34,10 @@ public class TrainController : MonoBehaviour {
 
 	private void DoSwitch () {
 		if (!head.turning)
-			head.next.nextChild = ++head.next.nextChild % head.next.children.Length;
+			head.next.DoSwitch(head.curr);
 	}
 
 	private void ProcessControls() {
-		//if (Input.GetKeyDown("space"))
-		//	DoSwitch();
 
 		if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift)) {
 			while (speed < maxSpeed) {
@@ -69,5 +64,9 @@ public class TrainController : MonoBehaviour {
 				}
 			}
 		}
+	}
+
+	private void OnTriggerEnter(Collider other) {
+		Debug.Log("Train Hit");
 	}
 }
