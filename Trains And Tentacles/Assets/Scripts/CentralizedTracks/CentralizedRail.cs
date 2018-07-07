@@ -10,11 +10,18 @@ public class CentralizedRail : MonoBehaviour, IProcGenElement, ISerializationCal
 	public List<CentralizedSwitch> switches;
 
 	private Dictionary<long, ControlPoint> _controlPointsDictionary;
+	//tmp as long, use GetElementID
+	private long newId = 1;
 
 	[SerializeField]
 	private List<long> _keys;
 	[SerializeField]
 	private List<ControlPoint> _vals;
+
+	private void Awake() {
+		if (_controlPointsDictionary == null)
+			_controlPointsDictionary = new Dictionary<long, ControlPoint>();
+	}
 
 	private void Start() {
 		iProgGenElementHook = new IProcGenElementProperty();
@@ -56,6 +63,31 @@ public class CentralizedRail : MonoBehaviour, IProcGenElement, ISerializationCal
 
 		for (int i = 0; i < _keys.Count; i++)
 			_controlPointsDictionary.Add(_keys[i], _vals[i]);
+	}
+
+	public ControlPoint GetControlPoint(long id) {
+		return _controlPointsDictionary[id];
+	}
+	
+	public void SetControlPoint (ControlPoint cp) {
+		if (cp._uid == 0)
+			cp._uid = newId++;
+
+		_controlPointsDictionary[cp._uid] = cp;
+	}
+
+	public long NewControlPoint(ControlPoint cp) {
+		cp._uid = cp._uid = newId++;
+
+		_controlPointsDictionary[cp._uid] = cp;
+
+		return cp._uid;
+	}
+
+	public long NewControlPoint() {
+		return NewControlPoint(new ControlPoint() {
+			rotation = Quaternion.identity
+		});
 	}
 }
 

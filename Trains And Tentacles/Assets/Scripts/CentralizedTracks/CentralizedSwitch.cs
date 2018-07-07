@@ -26,17 +26,19 @@ public class CentralizedSwitch : MonoBehaviour, IProcGenElement {
 	public CentralizedTrack t2;
 
 	//TODO option label/index
-	public int i1;
-	public int i2;
+	public long id1;
+	public long id2;
 
 	public TrackDirection next1 = TrackDirection.Forward;
 	public TrackDirection next2 = TrackDirection.Forward;
 
 	private new LineRenderer renderer;
+	private CentralizedRail rail;
 
 	private void Start() {
 		iProgGenElementHook = new IProcGenElementProperty();
 		renderer = GetComponent<LineRenderer>();
+		rail = GetComponentInParent<CentralizedRail>();
 	}
 
 	public void Clean() {
@@ -47,12 +49,12 @@ public class CentralizedSwitch : MonoBehaviour, IProcGenElement {
 		List<Vector3> points = new List<Vector3>();
 
 		ControlPoint a;
-		ControlPoint b = t1.controlPoints[i1];
-		ControlPoint c = t2.controlPoints[i2];
+		ControlPoint b = rail.GetControlPoint(id1);
+		ControlPoint c = rail.GetControlPoint(id2);
 		ControlPoint d;
 
-		t1.GetNextControlpoint(i1, next1, out a);
-		t2.GetNextControlpoint(i2, next2, out d);
+		a = rail.GetControlPoint(t1.GetNextControlpoint(id1, next1));
+		d = rail.GetControlPoint(t2.GetNextControlpoint(id2, next2));
 
 		points.AddRange(MakeCurveRail(b, a, c, 0));
 		points.AddRange(MakeRailTo(b, c, 1));

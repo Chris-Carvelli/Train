@@ -5,8 +5,8 @@ using System.Linq;
 
 
 [Serializable]
-public class ControlPoint {
-	private long uid;
+public struct ControlPoint {
+	public long _uid;
 
 	public string label;
 	public Vector3 position;
@@ -29,16 +29,20 @@ public class CentralizedTrack : MonoBehaviour, IProcGenElement {
 	public string trackName;
 	public bool closed = false;
 	public float step = 1;
-	public ControlPoint[] controlPoints;
+	public long[] controlPointIds;
 
+	[SerializeField]
 	private CentralizedRail rail;
 	private new LineRenderer renderer;
-	
+
+	private void Awake() {
+		rail = GetComponentInParent<CentralizedRail>();
+	}
+
 	private void Start() {
 		//TODO move in attribute creation
 		_iProcGenHook = new IProcGenElementProperty();
 		renderer = GetComponent<LineRenderer>();
-		rail = GetComponentInParent<CentralizedRail>();
 	}
 
 
@@ -52,12 +56,12 @@ public class CentralizedTrack : MonoBehaviour, IProcGenElement {
 
 		List<Vector3> points = new List<Vector3>();
 
-		for (int i = 0; i < controlPoints.Length; i++)
+		for (int i = 0; i < controlPointIds.Length; i++)
 			if (!IsEnd(i)) {
-				points.AddRange(MakeRailTo(controlPoints[i], controlPoints[(i + 1) % controlPoints.Length], i));
+				points.AddRange(MakeRailTo(rail.GetControlPoint(controlPointIds[i]), rail.GetControlPoint(controlPointIds[(i + 1) % controlPointIds.Length]), i));
 
 				if (!IsEnd(i + 1))
-					points.AddRange(MakeCurveRail(controlPoints[(i + 1) % controlPoints.Length], controlPoints[i], controlPoints[(i + 2) % controlPoints.Length], i));
+					points.AddRange(MakeCurveRail(rail.GetControlPoint(controlPointIds[(i + 1) % controlPointIds.Length]), rail.GetControlPoint(controlPointIds[i]), rail.GetControlPoint(controlPointIds[(i + 2) % controlPointIds.Length]), i));
 			}
 
 		renderer.positionCount = points.Count;
@@ -77,7 +81,7 @@ public class CentralizedTrack : MonoBehaviour, IProcGenElement {
 
 		if (i != 0 || closed)
 			a += dir * src.scale.x;
-		if (i != controlPoints.Length - 2 || closed)
+		if (i != controlPointIds.Length - 2 || closed)
 			b -= dir * dst.scale.x;
 
 
@@ -110,20 +114,15 @@ public class CentralizedTrack : MonoBehaviour, IProcGenElement {
 	/// Gets the next control point in the given direction. If the track is not closed and it goes out of bounds,
 	/// the current node is returned
 	/// </summary>
-	/// <param name="i">index of the current point</param>
+	/// <param name="id">index of the current point</param>
 	/// <param name="dir"></param>
 	/// <returns>THe next control point</returns>
-	public int GetNextControlpoint(int i, TrackDirection dir, out ControlPoint cp) {
-		i = i + (int)dir;
+	public long GetNextControlpoint(long id, TrackDirection dir) {
+		for (int i = 0; i < controlPointIds.Length; i++)
+			if (controlPointIds[i] == id)
+				return controlPointIds[i + (int)i];
 
-		if (!closed)
-			i = Mathf.Clamp(i, 0, controlPoints.Length - 1);
-
-		i = i % controlPoints.Length;
-
-		cp = controlPoints[i];
-
-		return i;
+		return -1;
 	}
 
 	/// <summary>
@@ -140,6 +139,6 @@ public class CentralizedTrack : MonoBehaviour, IProcGenElement {
 	}
 
 	public bool IsEnd(int i) {
-		return !closed && i == controlPoints.Length - 1;
+		return !closed && i == controlPointIds.Length - 1;
 	}
 }
