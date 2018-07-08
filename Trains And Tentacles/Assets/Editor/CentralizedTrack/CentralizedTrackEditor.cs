@@ -10,20 +10,26 @@ public static class ControlPointEditorExtensions {
 			position = prop.FindPropertyRelative("position").vector3Value,
 			rotation = prop.FindPropertyRelative("rotation").quaternionValue,
 			scale = prop.FindPropertyRelative("scale").vector3Value,
-			swtch = prop.FindPropertyRelative("swtch").objectReferenceValue as CentralizedSwitch
+			deviationId = prop.FindPropertyRelative("deviationId").longValue,
+			direction = (TrackDirection)prop.FindPropertyRelative("direction").enumValueIndex,
+			deviate = prop.FindPropertyRelative("deviate").boolValue
 		};
 	}
 
 	public static void SerializeControlPoint(this ControlPoint cp, ref SerializedProperty prop) {
-	prop.FindPropertyRelative("label").stringValue = cp.label;
+		prop.FindPropertyRelative("label").stringValue = cp.label;
 
-	prop.FindPropertyRelative("position").vector3Value = cp.position;
+		prop.FindPropertyRelative("position").vector3Value = cp.position;
 
-	prop.FindPropertyRelative("rotation").quaternionValue = cp.rotation;
+		prop.FindPropertyRelative("rotation").quaternionValue = cp.rotation;
 
-	prop.FindPropertyRelative("scale").vector3Value = cp.scale;
+		prop.FindPropertyRelative("scale").vector3Value = cp.scale;
 
-	prop.FindPropertyRelative("swtch").objectReferenceValue = cp.swtch;
+		prop.FindPropertyRelative("deviationId").longValue = cp.deviationId;
+
+		prop.FindPropertyRelative("direction").enumValueIndex = (int)cp.direction;
+
+		prop.FindPropertyRelative("deviate").boolValue = cp.deviate;
 	}
 }
 
@@ -40,6 +46,8 @@ public class CentralizedTrackEditor : Editor {
 	private SerializedProperty closed;
 	private SerializedProperty step;
 	private SerializedProperty controlPoints;
+
+	private SerializedProperty rendererPrefab;
 
 	private ReorderableList controlPointList;
 	
@@ -64,6 +72,8 @@ public class CentralizedTrackEditor : Editor {
 		step = serializedObject.FindProperty("step");
 		controlPoints = serializedObject.FindProperty("controlPointIds");
 
+		rendererPrefab = serializedObject.FindProperty("rendererPrefab");
+
 		controlPointList = new ReorderableList(serializedObject, controlPoints, true, true, true, true) {
 
 			// Draw header label
@@ -82,19 +92,30 @@ public class CentralizedTrackEditor : Editor {
 			onAddCallback = (ReorderableList list) => {
 				controlPoints.InsertArrayElementAtIndex(controlPoints.arraySize);
 				var idProp = controlPoints.GetArrayElementAtIndex(controlPoints.arraySize - 1);
-				idProp.longValue = rail.NewControlPoint();
+				idProp.longValue = rail.NewControlPoint(target as CentralizedTrack);
+			},
+
+			onRemoveCallback = (ReorderableList list) => {
+				controlPoints.DeleteArrayElementAtIndex(list.index);
 			},
 
 			drawElementCallback = (Rect rect, int index, bool isActive, bool isFocused) => {
 				if (isFocused)
 					_newFocusedControlPointIndex = index;
 
+;
 				long elementId = controlPointList.serializedProperty.GetArrayElementAtIndex(index).longValue;
 				var element = rail.GetControlPoint(elementId);
+				string text = element.label;
+				
+				if (element.deviationId > 0) {
+					var deviationElement = rail.GetControlPoint(element.deviationId);
+					text += " => [" + deviationElement.track.trackName + "]" + deviationElement.label;
+				}
 
 				EditorGUI.LabelField(
 					new Rect(rect.x, rect.y, rect.width - 30, EditorGUIUtility.singleLineHeight),
-					element.label);
+					text);
 			}
 		};
 	}
@@ -106,8 +127,10 @@ public class CentralizedTrackEditor : Editor {
 		serializedObject.Update();
 
 		EditorGUILayout.PropertyField(controls);
+		EditorGUILayout.PropertyField(trackName);
 		EditorGUILayout.PropertyField(closed);
 		EditorGUILayout.PropertyField(step);
+		EditorGUILayout.PropertyField(rendererPrefab);
 
 		if (_focusedControlPointIndex != -1) {
 			long id = controlPoints.GetArrayElementAtIndex(_focusedControlPointIndex).longValue;
@@ -147,24 +170,29 @@ public class CentralizedTrackEditor : Editor {
 
 			rail.SetControlPoint(curr);
 			if ((i == controlPoints.arraySize - 1 && closed.boolValue) || i < controlPoints.arraySize - 1)
-				DrawLine(curr.position, next.position);
+				DrawLine(curr.position, next.position, Color.green);
+
+			if (curr.deviationId > 0)
+				DrawLine(curr.position, rail.GetControlPoint(curr.deviationId).position, Color.yellow);
 		}
 
 		if (EditorGUI.EndChangeCheck())
 			serializedObject.ApplyModifiedProperties();
 	}
 
-	private void DrawLine(Vector3 curr, Vector3 next) {
-		Handles.DrawLine(transform.TransformPoint(curr), transform.TransformPoint(next));
+	private void DrawLine(Vector3 curr, Vector3 next, Color color) {
+		using (new Handles.DrawingScope(color)) {
+			Handles.DrawLine(transform.TransformPoint(curr), transform.TransformPoint(next));
 
-		Vector3 pos = curr + (next - curr).normalized * (Vector3.Distance(next, curr) / 2);
-		pos = transform.TransformPoint(pos);
+			Vector3 pos = curr + (next - curr).normalized * (Vector3.Distance(next, curr) / 2);
+			pos = transform.TransformPoint(pos);
 
-		Vector3 lookVector = next - curr;
+			Vector3 lookVector = next - curr;
 
-		if (lookVector != Vector3.zero)
-			if (Handles.Button(pos, Quaternion.LookRotation(lookVector, transform.up), .2f, .2f, Handles.CubeHandleCap))
-				Debug.Log("Clicked"); ;
+			if (lookVector != Vector3.zero)
+				if (Handles.Button(pos, Quaternion.LookRotation(lookVector, transform.up), .2f, .2f, Handles.CubeHandleCap))
+					Debug.Log("Clicked"); ;
+		}
 	}
 
 	private void DrawToolAndUpdate (ref ControlPoint curr) {

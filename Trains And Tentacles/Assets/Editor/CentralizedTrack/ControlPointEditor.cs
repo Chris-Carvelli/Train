@@ -15,12 +15,14 @@ public class ControlPointEditor : Editor {
 	public void OnInspectorGUI(long id) {
 		for (int i = 0; i < _keys.arraySize; i++)
 			if (_keys.GetArrayElementAtIndex(i).longValue == id) {
+				serializedObject.Update();
+
 				EditorGUI.BeginChangeCheck();
 
 				EditorGUILayout.PropertyField(_vals.GetArrayElementAtIndex(i));
 
 				if (EditorGUI.EndChangeCheck())
-					serializedObject.Update();
+					serializedObject.ApplyModifiedProperties();
 			}
 	}
 }

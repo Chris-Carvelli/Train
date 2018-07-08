@@ -5,7 +5,7 @@ using System.Linq;
 
 
 [Serializable]
-public struct ControlPoint {
+public class ControlPoint {
 	public long _uid;
 
 	public string label;
@@ -13,8 +13,11 @@ public struct ControlPoint {
 	public Quaternion rotation;
 	public Vector3 scale;
 
-	//TMP only one switch at a time, switch as GameObject
-	public CentralizedSwitch swtch;
+	public CentralizedTrack track;
+	//tmp only double switches
+	public long deviationId;
+	public TrackDirection direction;
+	public bool deviate;
 }
 
 [ExecuteInEditMode]
@@ -30,6 +33,9 @@ public class CentralizedTrack : MonoBehaviour, IProcGenElement {
 	public bool closed = false;
 	public float step = 1;
 	public long[] controlPointIds;
+
+	[Header("Prefabs")]
+	public LineRenderer rendererPrefab;
 
 	[SerializeField]
 	private CentralizedRail rail;
@@ -49,24 +55,56 @@ public class CentralizedTrack : MonoBehaviour, IProcGenElement {
 	//TODO move UI commands in separate class/inspector
 	public void Clean () {
 		renderer.positionCount = 0;
+		
+		for (int i = 0; i < transform.childCount; i++)
+			DestroyImmediate(transform.GetChild(i).gameObject);
 	}
 
 	public void Generate() {
 		Clean();
 
 		List<Vector3> points = new List<Vector3>();
+		List<LineRenderer> switches = new List<LineRenderer>();
 
 		for (int i = 0; i < controlPointIds.Length; i++)
 			if (!IsEnd(i)) {
-				points.AddRange(MakeRailTo(rail.GetControlPoint(controlPointIds[i]), rail.GetControlPoint(controlPointIds[(i + 1) % controlPointIds.Length]), i));
+				ControlPoint curr = rail.GetControlPoint(controlPointIds[i]);
+				ControlPoint next = rail.GetControlPoint(controlPointIds[(i + 1) % controlPointIds.Length]);
+				ControlPoint nextNext = rail.GetControlPoint(controlPointIds[(i + 2) % controlPointIds.Length]);
+
+				points.AddRange(MakeRailTo(curr, next, i));
 
 				if (!IsEnd(i + 1))
-					points.AddRange(MakeCurveRail(rail.GetControlPoint(controlPointIds[(i + 1) % controlPointIds.Length]), rail.GetControlPoint(controlPointIds[i]), rail.GetControlPoint(controlPointIds[(i + 2) % controlPointIds.Length]), i));
+					points.AddRange(MakeCurveRail(next, curr, nextNext, i));
+
+				if (next.deviationId > 0)
+					MakeSwitch(curr, next, rail.GetControlPoint(next.deviationId), i + 1);
+
 			}
 
 		renderer.positionCount = points.Count;
 		renderer.SetPositions(points.ToArray());
 		renderer.loop = closed;
+	}
+
+	private void MakeSwitch (ControlPoint prev, ControlPoint swtch, ControlPoint dev, int i) {
+		LineRenderer newRenderer = Instantiate(rendererPrefab);
+
+		List<Vector3> points = new List<Vector3>();
+
+		ControlPoint a = prev;
+		ControlPoint b = swtch;
+		ControlPoint c = dev;
+		ControlPoint d = rail.GetControlPoint(dev.track.GetNextControlpoint(dev._uid, dev.direction));
+
+		points.AddRange(MakeCurveRail(b, a, c, i));
+		points.AddRange(MakeRailTo(b, c, i + 1));
+		points.AddRange(MakeCurveRail(c, b, d, i + 2));
+
+		newRenderer.positionCount = points.Count;
+		newRenderer	.SetPositions(points.ToArray());
+		
+		newRenderer.transform.SetParent(transform, false);
 	}
 
 	public void UpdatePoint (int pointIndex) {
@@ -116,13 +154,27 @@ public class CentralizedTrack : MonoBehaviour, IProcGenElement {
 	/// </summary>
 	/// <param name="id">index of the current point</param>
 	/// <param name="dir"></param>
-	/// <returns>THe next control point</returns>
+	/// <returns>The next control point</returns>
 	public long GetNextControlpoint(long id, TrackDirection dir) {
-		for (int i = 0; i < controlPointIds.Length; i++)
+		int i = -1;
+		for (i = 0; i < controlPointIds.Length; i++)
 			if (controlPointIds[i] == id)
-				return controlPointIds[i + (int)i];
+				break;
 
-		return -1;
+		if (i == -1)
+			return -1;
+
+		i = i + (int)dir;
+
+		if (!closed)
+			i = Mathf.Clamp(i, 0, controlPointIds.Length - 1);
+
+		i = i % controlPointIds.Length;
+
+		if (i < 0)
+			i += controlPointIds.Length;
+		
+		return controlPointIds[i];
 	}
 
 	/// <summary>
@@ -142,3 +194,4 @@ public class CentralizedTrack : MonoBehaviour, IProcGenElement {
 		return !closed && i == controlPointIds.Length - 1;
 	}
 }
+

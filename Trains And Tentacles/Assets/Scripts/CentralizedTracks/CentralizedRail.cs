@@ -84,9 +84,10 @@ public class CentralizedRail : MonoBehaviour, IProcGenElement, ISerializationCal
 		return cp._uid;
 	}
 
-	public long NewControlPoint() {
+	public long NewControlPoint(CentralizedTrack track) {
 		return NewControlPoint(new ControlPoint() {
-			rotation = Quaternion.identity
+			rotation = Quaternion.identity,
+			track = track
 		});
 	}
 }

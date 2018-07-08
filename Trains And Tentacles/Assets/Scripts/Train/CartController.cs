@@ -5,9 +5,9 @@ using UnityEngine;
 public class CartController : MonoBehaviour {
 	[Header("Runtime Info")]
 	public CartController prevCart;
-	public WaypointNode prev;
-	public WaypointNode curr;
-	public WaypointNode next;
+	public ControlPoint prev;
+	public ControlPoint curr;
+	public ControlPoint next;
 	public TrainController trainController;
 	public Vector3 meshDimensions;
 
@@ -16,7 +16,7 @@ public class CartController : MonoBehaviour {
 		Mesh mesh = GetComponentInChildren<MeshFilter>().sharedMesh;
 		meshDimensions = mesh.bounds.size;
 
-		float distance = Vector3.Distance(transform.localPosition, next.transform.localPosition);
+		float distance = Vector3.Distance(transform.localPosition, next.position);
 		float offset = (meshDimensions.z * 2F) / distance;
 		t = prevCart == null ? 0.5f : prevCart.t - offset;
 	}
@@ -40,8 +40,8 @@ public class CartController : MonoBehaviour {
 	[Header("Debug")]
 	public bool turning = false;
 	private bool IsTurning() {
-		float d = Vector3.Distance(transform.localPosition, curr.transform.localPosition);
-		return d <= curr.radius;
+		float d = Vector3.Distance(transform.localPosition, curr.position);
+		return d <= curr.scale.x;
 	}
 
 	private bool Switch() {
@@ -55,8 +55,8 @@ public class CartController : MonoBehaviour {
 	//TODO unite DoStraight and DoTurn, just get different posA and posB
 	private void DoStraight() {
 
-		Vector3 posA = prev.transform.localPosition + GetDirection(prev.transform, curr.transform) * prev.radius;
-		Vector3 posB = curr.transform.localPosition + GetDirection(curr.transform, prev.transform) * curr.radius;
+		Vector3 posA = prev.position + GetDirection(prev.position, curr.position) * prev.scale.x;
+		Vector3 posB = curr.position + GetDirection(curr.position, prev.position) * curr.scale.x;
 
 		float distance = Vector3.Distance(posA, posB);
 		t += (GetSpeed() * Time.deltaTime) / distance;
@@ -70,21 +70,21 @@ public class CartController : MonoBehaviour {
 	}
 
 	private void DoTurn() {
-		Vector3 dirA = GetDirection(curr.transform, prev.transform);
-		Vector3 dirB = GetDirection(curr.transform, next.transform);
+		Vector3 dirA = GetDirection(curr.position, prev.position);
+		Vector3 dirB = GetDirection(curr.position, next.position);
 
-		Vector3 posA = curr.transform.localPosition + dirA * curr.radius;
-		Vector3 posB = curr.transform.localPosition + dirB * curr.radius;
+		Vector3 posA = curr.position + dirA * curr.scale.x;
+		Vector3 posB = curr.position + dirB * curr.scale.x;
 
-		Quaternion rotA = Quaternion.LookRotation(GetDirection(prev.transform, curr.transform), Vector3.up);
-		Quaternion rotB = Quaternion.LookRotation(GetDirection(curr.transform, next.transform), Vector3.up);
+		Quaternion rotA = Quaternion.LookRotation(GetDirection(prev.position, curr.position), Vector3.up);
+		Quaternion rotB = Quaternion.LookRotation(GetDirection(curr.position, next.position), Vector3.up);
 
 		float distance = Vector3.Distance(posA, posB);
 		//float distance = (Mathf.PI / 2) * curr.radius;
 		t += (GetSpeed() * Time.deltaTime) / distance;
 
-		Vector3 x = Vector3.Lerp(posA, curr.transform.localPosition, t);
-		Vector3 y = Vector3.Lerp(curr.transform.localPosition, posB, t);
+		Vector3 x = Vector3.Lerp(posA, curr.position, t);
+		Vector3 y = Vector3.Lerp(curr.position, posB, t);
 
 		Vector3 pos = Vector3.Lerp(x, y, t);
 		//Vector3 pos = Vector3.Slerp(posA, posB, t);
@@ -98,8 +98,8 @@ public class CartController : MonoBehaviour {
 		positionB = posB;
 	}
 	
-	private Vector3 GetDirection(Transform a, Transform b) {
-		return a.localPosition.GetDirection(b.localPosition);
+	private Vector3 GetDirection(Vector3 a, Vector3 b) {
+		return a.GetDirection(b);
 	}
 
 	public float GetSpeed() {
@@ -107,8 +107,8 @@ public class CartController : MonoBehaviour {
 	}
 
 	public void Forward () {
-		prev = curr ?? prevCart.prev;
-		curr = next ?? prevCart.curr;
-		next = curr.NextChild(prev);
+		//prev = curr ?? prevCart.prev;
+		//curr = next ?? prevCart.curr;
+		//next = curr.NextChild(prev);
 	}
 }

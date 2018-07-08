@@ -6,8 +6,10 @@ using System;
 public class TrainController : MonoBehaviour {
 	[Header("Runtime Info")]
 	public Transform[] wayPoints;
+	public TrackDirection direction = TrackDirection.Forward;
 
 	[Header("Config")]
+	public CentralizedRail rail;
 	public CartController head;
 	public static float speed = 10f;
     public float rotSpeed = 60f;
@@ -34,7 +36,7 @@ public class TrainController : MonoBehaviour {
 
 	private void DoSwitch () {
 		if (!head.turning)
-			head.next.DoSwitch(head.curr);
+			head.next.deviate = !head.next.deviate;
 	}
 
 	private void ProcessControls() {
@@ -68,5 +70,14 @@ public class TrainController : MonoBehaviour {
 
 	private void OnTriggerEnter(Collider other) {
 		Debug.Log("Train Hit");
+	}
+
+	public ControlPoint GetNext (ControlPoint cp) {
+
+		//TODO ugly as hell (the ids are stored in different places). Refactor. Maybe go back to the node-centric approach, with each node storing data about all it's nexts?
+		long nextId = cp.deviate ? cp.deviationId : cp.track.GetNextControlpoint(cp._uid, direction);
+		ControlPoint ret = rail.GetControlPoint(nextId);
+
+		return ret;
 	}
 }
