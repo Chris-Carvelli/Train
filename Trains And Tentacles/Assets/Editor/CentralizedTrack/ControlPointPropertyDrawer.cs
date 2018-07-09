@@ -8,46 +8,50 @@ public class ControlPointPropertyDrawer : PropertyDrawer {
 	private float _increment = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
 
 	public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
-		Rect totalPos = position;
-		totalPos.height = _increment * 9;
-
-		EditorGUI.BeginProperty(totalPos, label, property);
-
-		Rect cursor = position;
-		cursor.height = EditorGUIUtility.singleLineHeight;
 		
-		cursor.y += _increment;
-		EditorGUI.LabelField(cursor, "Control Point Inspector", GUIStyles.Label);
-		cursor.y += _increment;
+		EditorGUILayout.LabelField("Control Point Inspector", EditorStyles.boldLabel);
+
+		CentralizedTrack track = property.FindPropertyRelative("track").objectReferenceValue as CentralizedTrack;
+		EditorGUILayout.LabelField("Track: " + track.name + ". ID: " + property.FindPropertyRelative("_uid").longValue.ToString(), EditorStyles.boldLabel); 
 
 		SerializedProperty rotationProp = property.FindPropertyRelative("rotation");
 		SerializedProperty deviateProp = property.FindPropertyRelative("deviate");
 
-		EditorGUI.PropertyField(cursor, property.FindPropertyRelative("label"));
-		cursor.y += _increment;
+		EditorGUILayout.PropertyField(property.FindPropertyRelative("label"));
 
-		EditorGUI.PropertyField(cursor, property.FindPropertyRelative("position"));
-		cursor.y += _increment;
+		EditorGUILayout.PropertyField(property.FindPropertyRelative("position"));
 
-		rotationProp.quaternionValue = Quaternion.Euler(EditorGUI.Vector3Field(cursor, rotationProp.name, rotationProp.quaternionValue.eulerAngles));
-		cursor.y += _increment;
+		rotationProp.quaternionValue = Quaternion.Euler(EditorGUILayout.Vector3Field(rotationProp.name, rotationProp.quaternionValue.eulerAngles));
 
-		EditorGUI.PropertyField(cursor, property.FindPropertyRelative("scale"));
-		cursor.y += _increment;
+		EditorGUILayout.PropertyField(property.FindPropertyRelative("scale"));
 
-		EditorGUI.PropertyField(cursor, property.FindPropertyRelative("deviationId"));
-		cursor.y += _increment;
+		using (var horizontalScope = new GUILayout.HorizontalScope()) {
 
-		EditorGUI.PropertyField(cursor, property.FindPropertyRelative("direction"));
-		cursor.y += _increment;
+			EditorGUILayout.PropertyField(property.FindPropertyRelative("deviationId"), new GUIContent() {
+				text = "Switch"
+			});
 
-		deviateProp.boolValue = GUIControls.ToggleButton(cursor, "Normal", "Switching", deviateProp.boolValue);
+			bool enabled = property.FindPropertyRelative("deviationId").longValue <= 0;
+			using (var disableGroup = new EditorGUI.DisabledScope(enabled)) {
+				EditorGUILayout.PropertyField(property.FindPropertyRelative("direction"), new GUIContent(), GUILayout.Width(70));
 
-		EditorGUI.EndProperty();
-	}
+				deviateProp.boolValue = GUILayoutControls.Switch(enabled ? deviateProp.boolValue : false);
+			}
+		}
 
-	public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
-		return (_increment) * 9;
+		
+		//}
+
+		//EditorGUI.PropertyField(cursor, property.FindPropertyRelative("deviationId"));
+		//cursor.y += _increment;
+
+		//if (property.FindPropertyRelative("deviationId").longValue > 0) {
+		//	EditorGUI.PropertyField(cursor, property.FindPropertyRelative("direction"));
+		//	cursor.y += _increment;
+
+		//	deviateProp.boolValue = GUIControls.Switch(cursor, deviateProp.boolValue);
+		//}
+
 	}
 }
 

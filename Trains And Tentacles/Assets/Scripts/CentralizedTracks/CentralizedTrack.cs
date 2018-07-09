@@ -3,23 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-
-[Serializable]
-public class ControlPoint {
-	public long _uid;
-
-	public string label;
-	public Vector3 position;
-	public Quaternion rotation;
-	public Vector3 scale;
-
-	public CentralizedTrack track;
-	//tmp only double switches
-	public long deviationId;
-	public TrackDirection direction;
-	public bool deviate;
-}
-
 [ExecuteInEditMode]
 [RequireComponent(typeof(LineRenderer))]
 public class CentralizedTrack : MonoBehaviour, IProcGenElement {
@@ -29,7 +12,6 @@ public class CentralizedTrack : MonoBehaviour, IProcGenElement {
 	private IProcGenElementProperty _iProcGenHook = new IProcGenElementProperty();
 
 	[Header("Config")]
-	public string trackName;
 	public bool closed = false;
 	public float step = 1;
 	public long[] controlPointIds;
@@ -95,7 +77,7 @@ public class CentralizedTrack : MonoBehaviour, IProcGenElement {
 		ControlPoint a = prev;
 		ControlPoint b = swtch;
 		ControlPoint c = dev;
-		ControlPoint d = rail.GetControlPoint(dev.track.GetNextControlpoint(dev._uid, dev.direction));
+		ControlPoint d = rail.GetControlPoint(dev.track.GetNextControlPoint(dev._uid, swtch._uid, ref swtch.direction));
 
 		points.AddRange(MakeCurveRail(b, a, c, i));
 		points.AddRange(MakeRailTo(b, c, i + 1));
@@ -105,10 +87,6 @@ public class CentralizedTrack : MonoBehaviour, IProcGenElement {
 		newRenderer	.SetPositions(points.ToArray());
 		
 		newRenderer.transform.SetParent(transform, false);
-	}
-
-	public void UpdatePoint (int pointIndex) {
-		throw new NotImplementedException("Not yet Implemented");
 	}
 
 	private List<Vector3> MakeRailTo(ControlPoint src, ControlPoint dst, int i) {
@@ -139,7 +117,7 @@ public class CentralizedTrack : MonoBehaviour, IProcGenElement {
 		int midpoints = (int)(distance / step);
 		float angleStep = step / (curr.scale.x * (Mathf.PI / 2));
 				
-		for (int i = 0; i < midpoints - 1; i++) {
+		for (int i = 0; i < midpoints; i++) {
 			Vector3 x = Vector3.Lerp(a, b, i * angleStep);
 			Vector3 y = Vector3.Lerp(b, c, i * angleStep);
 			ret.Add(Vector3.Lerp(x, y, i * angleStep));
@@ -152,13 +130,20 @@ public class CentralizedTrack : MonoBehaviour, IProcGenElement {
 	/// Gets the next control point in the given direction. If the track is not closed and it goes out of bounds,
 	/// the current node is returned
 	/// </summary>
-	/// <param name="id">index of the current point</param>
+	/// <param name="currCP">index of the current point</param>
 	/// <param name="dir"></param>
 	/// <returns>The next control point</returns>
-	public long GetNextControlpoint(long id, TrackDirection dir) {
+	public long GetNextControlPoint(long currCP, long prevId, ref TrackDirection dir) {
+		ControlPoint cp = rail.GetControlPoint(currCP);
+
+		if (cp.deviate && cp.deviationId > 0 && cp.deviationId != prevId) {
+			dir = cp.direction;
+			return cp.deviationId;
+		}
+
 		int i = -1;
 		for (i = 0; i < controlPointIds.Length; i++)
-			if (controlPointIds[i] == id)
+			if (controlPointIds[i] == currCP)
 				break;
 
 		if (i == -1)

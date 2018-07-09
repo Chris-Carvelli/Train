@@ -35,11 +35,13 @@ public class TrainController : MonoBehaviour {
 	}
 
 	private void DoSwitch () {
-		if (!head.turning)
-			head.next.deviate = !head.next.deviate;
+		direction = direction == TrackDirection.Forward ? TrackDirection.Backward : TrackDirection.Forward;
+		head.Forward();
 	}
 
 	private void ProcessControls() {
+		if (Input.GetKeyDown(KeyCode.Space))
+			DoSwitch();
 
 		if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift)) {
 			while (speed < maxSpeed) {
@@ -71,13 +73,17 @@ public class TrainController : MonoBehaviour {
 	private void OnTriggerEnter(Collider other) {
 		Debug.Log("Train Hit");
 	}
-
-	public ControlPoint GetNext (ControlPoint cp) {
+	
+	public ControlPoint GetNext (ControlPoint currCp, ControlPoint prevCp) {
 
 		//TODO ugly as hell (the ids are stored in different places). Refactor. Maybe go back to the node-centric approach, with each node storing data about all it's nexts?
-		long nextId = cp.deviate ? cp.deviationId : cp.track.GetNextControlpoint(cp._uid, direction);
+		long nextId = currCp.track.GetNextControlPoint(currCp._uid, prevCp._uid, ref direction);
 		ControlPoint ret = rail.GetControlPoint(nextId);
 
 		return ret;
+	}
+
+	public long GetNextID(ControlPointRef currCp, ControlPointRef prevCp) {
+		return GetNext(rail.GetControlPoint(currCp.uid), rail.GetControlPoint(prevCp.uid))._uid;
 	}
 }

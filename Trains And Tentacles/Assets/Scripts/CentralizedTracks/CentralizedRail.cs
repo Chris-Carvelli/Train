@@ -2,12 +2,17 @@
 using UnityEngine;
 using System.Linq;
 
+public enum TrackDirection {
+	Forward = 1,
+	Backward = -1
+}
+
 public class CentralizedRail : MonoBehaviour, IProcGenElement, ISerializationCallbackReceiver {
 	[SerializeField]
 	private IProcGenElementProperty iProgGenElementHook = new IProcGenElementProperty();
 
 	public List<CentralizedTrack> tracks;
-	public List<CentralizedSwitch> switches;
+	//public List<CentralizedSwitch> switches;
 
 	private Dictionary<long, ControlPoint> _controlPointsDictionary;
 	//tmp as long, use GetElementID
@@ -31,16 +36,16 @@ public class CentralizedRail : MonoBehaviour, IProcGenElement, ISerializationCal
 		foreach (CentralizedTrack track in tracks)
 			track.Clean();
 
-		foreach (CentralizedSwitch swtch in switches)
-			swtch.Clean();
+		//foreach (CentralizedSwitch swtch in switches)
+		//	swtch.Clean();
 	}
 
 	public void Generate() {
 		foreach (CentralizedTrack track in tracks)
 			track.Generate();
 
-		foreach (CentralizedSwitch swtch in switches)
-			swtch.Generate();
+		//foreach (CentralizedSwitch swtch in switches)
+		//	swtch.Generate();
 	}
 
 	public void OnBeforeSerialize() {
@@ -63,10 +68,20 @@ public class CentralizedRail : MonoBehaviour, IProcGenElement, ISerializationCal
 
 		for (int i = 0; i < _keys.Count; i++)
 			_controlPointsDictionary.Add(_keys[i], _vals[i]);
+
+		//var orderedList = _controlPointsDictionary.ToList();
+		//orderedList.AsParallel().OrderBy<KeyValuePair<long, ControlPoint>>((pair1, pair2) => pair1.Value.track.GetInstanceID() - pair2.Value.track.GetInstanceID());
+		//_controlPointsDictionary = orderedList.ToDictionary(t => t.Key, t => t.Value);
+		//only on main thread (no editor)
+		//_controlPointsDictionary = (from entry in _controlPointsDictionary orderby entry.Value.track.GetInstanceID() ascending select entry).ToDictionary(t => t.Key, t => t.Value);
 	}
 
 	public ControlPoint GetControlPoint(long id) {
 		return _controlPointsDictionary[id];
+	}
+
+	public bool TryGetControlPoint(long id, out ControlPoint controlPoint) {
+		return _controlPointsDictionary.TryGetValue(id, out controlPoint);
 	}
 	
 	public void SetControlPoint (ControlPoint cp) {
@@ -89,6 +104,14 @@ public class CentralizedRail : MonoBehaviour, IProcGenElement, ISerializationCal
 			rotation = Quaternion.identity,
 			track = track
 		});
+	}
+
+	public void RemoveControlPoint(long id) {
+		_controlPointsDictionary.Remove(id);
+	}
+
+	public void RemoveControlPoint(ControlPoint cp) {
+		RemoveControlPoint(cp._uid);
 	}
 }
 

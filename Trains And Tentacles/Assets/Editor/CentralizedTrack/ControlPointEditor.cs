@@ -8,6 +8,9 @@ public class ControlPointEditor : Editor {
 	SerializedProperty _vals;
 
 	private void OnEnable() {
+		if (target == null)
+			return;
+
 		_keys = serializedObject.FindProperty("_keys");
 		_vals = serializedObject.FindProperty("_vals");
 	}
