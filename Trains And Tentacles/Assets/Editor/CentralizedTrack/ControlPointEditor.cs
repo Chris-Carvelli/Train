@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(CentralizedRail))]
+[CustomEditor(typeof(Rail))]
 public class ControlPointEditor : Editor {
 
 	SerializedProperty _keys;

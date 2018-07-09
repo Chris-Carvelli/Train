@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditorInternal;
 using EditorGUIUtils;
 
-[CustomEditor(typeof(CentralizedRail))]
+[CustomEditor(typeof(Rail))]
 public class CentralizedRailEditor : Editor {
 	private SerializedProperty trackListProp;
 
@@ -27,7 +27,7 @@ public class CentralizedRailEditor : Editor {
 		controlPointKeys = serializedObject.FindProperty("_keys");
 		controlPointVals = serializedObject.FindProperty("_vals");
 
-		CentralizedRail rail = (target as CentralizedRail);
+		Rail rail = (target as Rail);
 
 		cachedControlPointEditor = CreateEditor(rail, typeof(ControlPointEditor)) as ControlPointEditor;
 
@@ -55,7 +55,7 @@ public class CentralizedRailEditor : Editor {
 			onAddCallback = (ReorderableList list) => {
 				controlPointKeys.InsertArrayElementAtIndex(controlPointKeys.arraySize);
 				var idProp = controlPointKeys.GetArrayElementAtIndex(controlPointKeys.arraySize - 1);
-				idProp.longValue = rail.NewControlPoint(target as CentralizedTrack);
+				idProp.longValue = rail.NewControlPoint(target as Track);
 			},
 
 			onRemoveCallback = (ReorderableList list) => {
@@ -93,7 +93,7 @@ public class CentralizedRailEditor : Editor {
 	}
 
 	public override void OnInspectorGUI() {
-		base.OnInspectorGUI();
+		EditorGUILayout.PropertyField(serializedObject.FindProperty("iProgGenElementHook"));
 
 		if (_focusedControlPointIndex != -1) {
 			long id = controlPointKeys.GetArrayElementAtIndex(_focusedControlPointIndex).longValue;

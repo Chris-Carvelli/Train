@@ -11,7 +11,7 @@ public class ControlPointPropertyDrawer : PropertyDrawer {
 		
 		EditorGUILayout.LabelField("Control Point Inspector", EditorStyles.boldLabel);
 
-		CentralizedTrack track = property.FindPropertyRelative("track").objectReferenceValue as CentralizedTrack;
+		Track track = property.FindPropertyRelative("track").objectReferenceValue as Track;
 		EditorGUILayout.LabelField("Track: " + track.name + ". ID: " + property.FindPropertyRelative("_uid").longValue.ToString(), EditorStyles.boldLabel); 
 
 		SerializedProperty rotationProp = property.FindPropertyRelative("rotation");

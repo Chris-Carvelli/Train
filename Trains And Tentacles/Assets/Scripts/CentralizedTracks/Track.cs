@@ -5,7 +5,7 @@ using System.Linq;
 
 [ExecuteInEditMode]
 [RequireComponent(typeof(LineRenderer))]
-public class CentralizedTrack : MonoBehaviour, IProcGenElement {
+public class Track : MonoBehaviour, IProcGenElement {
 	//TODO create attribute InterfaceControls(IType)
 	[Header("Controls")]
 	[SerializeField]
@@ -20,11 +20,11 @@ public class CentralizedTrack : MonoBehaviour, IProcGenElement {
 	public LineRenderer rendererPrefab;
 
 	[SerializeField]
-	private CentralizedRail rail;
+	private Rail rail;
 	private new LineRenderer renderer;
 
 	private void Awake() {
-		rail = GetComponentInParent<CentralizedRail>();
+		rail = GetComponentInParent<Rail>();
 	}
 
 	private void Start() {
@@ -46,7 +46,6 @@ public class CentralizedTrack : MonoBehaviour, IProcGenElement {
 		Clean();
 
 		List<Vector3> points = new List<Vector3>();
-		List<LineRenderer> switches = new List<LineRenderer>();
 
 		for (int i = 0; i < controlPointIds.Length; i++)
 			if (!IsEnd(i)) {

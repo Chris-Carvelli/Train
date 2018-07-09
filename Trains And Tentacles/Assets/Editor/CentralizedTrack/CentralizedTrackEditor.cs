@@ -36,11 +36,11 @@ public static class ControlPointEditorExtensions {
 }
 
 
-[CustomEditor(typeof(CentralizedTrack))]
+[CustomEditor(typeof(Track))]
 public class CentralizedTrackEditor : Editor {
 	private Transform transform;
 
-	private CentralizedRail rail;
+	private Rail rail;
 	private ControlPointEditor cachedEditor;
 
 	private SerializedProperty controls;
@@ -62,7 +62,7 @@ public class CentralizedTrackEditor : Editor {
 	private void OnEnable() {
 		_focusedControlPointIndex = 0;
 
-		rail = serializedObject.FindProperty("rail").objectReferenceValue as CentralizedRail;
+		rail = serializedObject.FindProperty("rail").objectReferenceValue as Rail;
 
 		cachedEditor = CreateEditor(rail, typeof(ControlPointEditor)) as ControlPointEditor;
 
@@ -93,7 +93,7 @@ public class CentralizedTrackEditor : Editor {
 			onAddCallback = (ReorderableList list) => {
 				controlPoints.InsertArrayElementAtIndex(controlPoints.arraySize);
 				var idProp = controlPoints.GetArrayElementAtIndex(controlPoints.arraySize - 1);
-				idProp.longValue = rail.NewControlPoint(target as CentralizedTrack);
+				idProp.longValue = rail.NewControlPoint(target as Track);
 			},
 
 			onRemoveCallback = (ReorderableList list) => {

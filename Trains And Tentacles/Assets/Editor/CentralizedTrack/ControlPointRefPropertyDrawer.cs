@@ -28,7 +28,7 @@ public class ControlPointRefPropertyDrawer : PropertyDrawer {
 
 		if (railProp.objectReferenceValue != null) {
 			//TODO ad sugar syntax
-			CentralizedRail rail = railProp.objectReferenceValue as CentralizedRail;
+			Rail rail = railProp.objectReferenceValue as Rail;
 
 			EditorGUI.PropertyField(cursor, uidProp);
 			cursor.y += _increment;

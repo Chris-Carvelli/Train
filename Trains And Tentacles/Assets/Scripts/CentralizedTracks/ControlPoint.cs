@@ -11,7 +11,7 @@ public struct ControlPoint {
 	public Quaternion rotation;
 	public Vector3 scale;
 
-	public CentralizedTrack track;
+	public Track track;
 	//tmp only double switches
 	public long deviationId;
 	public TrackDirection direction;
@@ -20,7 +20,7 @@ public struct ControlPoint {
 
 [Serializable]
 public class ControlPointRef {
-	public CentralizedRail rail;
+	public Rail rail;
 	public long uid;
 
 	public ControlPointRef (ControlPointRef cpr) {
@@ -100,7 +100,7 @@ public class ControlPointRef {
 		}
 	}
 
-	public CentralizedTrack track {
+	public Track track {
 		get {
 			return rail.GetControlPoint(uid).track;
 		}

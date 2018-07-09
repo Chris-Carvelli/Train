@@ -7,11 +7,11 @@ public enum TrackDirection {
 	Backward = -1
 }
 
-public class CentralizedRail : MonoBehaviour, IProcGenElement, ISerializationCallbackReceiver {
+public class Rail : MonoBehaviour, IProcGenElement, ISerializationCallbackReceiver {
 	[SerializeField]
 	private IProcGenElementProperty iProgGenElementHook = new IProcGenElementProperty();
 
-	public List<CentralizedTrack> tracks;
+	public List<Track> tracks;
 	//public List<CentralizedSwitch> switches;
 
 	private Dictionary<long, ControlPoint> _controlPointsDictionary;
@@ -33,7 +33,7 @@ public class CentralizedRail : MonoBehaviour, IProcGenElement, ISerializationCal
 	}
 
 	public void Clean() {
-		foreach (CentralizedTrack track in tracks)
+		foreach (Track track in tracks)
 			track.Clean();
 
 		//foreach (CentralizedSwitch swtch in switches)
@@ -41,7 +41,7 @@ public class CentralizedRail : MonoBehaviour, IProcGenElement, ISerializationCal
 	}
 
 	public void Generate() {
-		foreach (CentralizedTrack track in tracks)
+		foreach (Track track in tracks)
 			track.Generate();
 
 		//foreach (CentralizedSwitch swtch in switches)
@@ -99,7 +99,7 @@ public class CentralizedRail : MonoBehaviour, IProcGenElement, ISerializationCal
 		return cp._uid;
 	}
 
-	public long NewControlPoint(CentralizedTrack track) {
+	public long NewControlPoint(Track track) {
 		return NewControlPoint(new ControlPoint() {
 			rotation = Quaternion.identity,
 			track = track

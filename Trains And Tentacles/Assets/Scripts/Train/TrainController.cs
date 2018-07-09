@@ -9,7 +9,7 @@ public class TrainController : MonoBehaviour {
 	public TrackDirection direction = TrackDirection.Forward;
 
 	[Header("Config")]
-	public CentralizedRail rail;
+	public Rail rail;
 	public CartController head;
 	public static float speed = 10f;
     public float rotSpeed = 60f;
